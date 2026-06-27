@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROS 2 6-DOF Joint Controller</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 450px; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .input-group { display: flex; flex-direction: column; }
+        label { margin-bottom: 5px; font-weight: bold; color: #555; }
+        input[type="number"] { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background-color: #218838; }
+        #status { margin-top: 15px; font-weight: bold; text-align: center; min-height: 20px; }
+        
+        /* New styling for the copyright footer */
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 12px;
+            color: #888888;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>6-DOF Joint Control (Degrees)</h2>
+    
+    <div class="grid-inputs">
+        <div class="input-group">
+            <label for="j1">Joint 1:</label>
+            <input type="number" id="j1" value="0.0" step="0.1">
+        </div>
+        <div class="input-group">
+            <label for="j2">Joint 2:</label>
+            <input type="number" id="j2" value="0.0" step="0.1">
+        </div>
+        <div class="input-group">
+            <label for="j3">Joint 3:</label>
+            <input type="number" id="j3" value="0.0" step="0.1">
+        </div>
+        <div class="input-group">
+            <label for="j4">Joint 4:</label>
+            <input type="number" id="j4" value="0.0" step="0.1">
+        </div>
+        <div class="input-group">
+            <label for="j5">Joint 5:</label>
+            <input type="number" id="j5" value="0.0" step="0.1">
+        </div>
+        <div class="input-group">
+            <label for="j6">Joint 6:</label>
+            <input type="number" id="j6" value="0.0" step="0.1">
+        </div>
+    </div>
+
+    <button onclick="sendJoints()">PUBLISH JOINTS</button>
+    <div id="status"></div>
+
+    <div class="footer">
+        &copy; 2026 RSL
+    </div>
+</div>
+
+<script>
+async function sendJoints() {
+    const statusDiv = document.getElementById('status');
+    statusDiv.style.color = "orange";
+    statusDiv.innerText = "Sending commands...";
+
+    const joints = [];
+    for (let i = 1; i <= 6; i++) {
+        joints.push(parseFloat(document.getElementById(`j${i}`).value) || 0.0);
+    }
+
+    try {
+        const response = await fetch('/publish_joints', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ joints: joints })
+        });
+        
+        const data = await response.json();
+        if (data.status === 'success') {
+            statusDiv.style.color = "green";
+            statusDiv.innerText = "Joint state published successfully!";
+        } else {
+            statusDiv.style.color = "red";
+            statusDiv.innerText = "Error: " + data.message;
+        }
+    } catch (error) {
+        statusDiv.style.color = "red";
+        statusDiv.innerText = "Server error connection failed.";
+    }
+}
+</script>
+
+</body>
+</html>
